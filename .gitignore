@@ -1,0 +1,24 @@
+# Local environments and caches
+.venv/
+venv/
+__pycache__/
+*.pyc
+node_modules/
+dist/
+build/
+.DS_Store
+
+# Local configuration and private notes
+.env
+.env.*
+!.env.example
+local-notes/
+
+# Generated data/model artifacts: document how to obtain these separately
+data/raw/
+data/processed/
+models/artifacts/
+*.pt
+*.pth
+*.safetensors
+*.gguf
