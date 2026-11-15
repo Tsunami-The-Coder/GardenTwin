@@ -1,6 +1,3 @@
-cd /home/ayaan/GardenTwin
-
-cat > .gitignore <<'EOF'
 # Python
 __pycache__/
 *.py[cod]
@@ -23,13 +20,13 @@ build/
 !.env.example
 local-notes/
 
-# Datasets and generated data
+# Generated datasets
 data/raw/
 data/processed/
 datasets/raw/
 datasets/processed/
 
-# AI model artifacts (keep model documentation)
+# Model artifacts (reviewed exceptions may be force-added)
 models/artifacts/
 *.pt
 *.pth
@@ -49,4 +46,3 @@ logs/*
 .vscode/
 .DS_Store
 Thumbs.db
-EOF

@@ -1,0 +1,21 @@
+{
+  "model": "NVIDIA FourCastNet1 via Earth2Studio",
+  "source": "GFS",
+  "location": {
+    "latitude": 39.4273,
+    "longitude": -75.2341,
+    "grid_latitude": 39.5,
+    "grid_longitude": 284.75
+  },
+  "initialization_time": "2026-11-15T00:00:00.000000000",
+  "forecast_valid_time": "2026-11-15T06:00:00.000000000",
+  "forecast_lead_hours": 6,
+  "weather": {
+    "temperature_c": 6.100091552734398,
+    "wind_u_10m_m_s": 4.291666507720947,
+    "wind_v_10m_m_s": -0.8934462666511536,
+    "wind_speed_10m_m_s": 4.383679692323174,
+    "mean_sea_level_pressure_hpa": 1016.153046875,
+    "total_column_water_kg_m2": 11.697641372680664
+  }
+}
