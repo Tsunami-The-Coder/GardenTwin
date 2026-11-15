@@ -1,8 +1,8 @@
 from datetime import date
 from typing import Literal
 
-from pydantic import BaseModel, Field, model_validator
-
+from pydantic import BaseModel, Field, model_validator, field_validator
+from simulation.crops.profiles import get_crop_profile
 
 class SimulationRequest(BaseModel):
     location_name: str = "My Garden"
@@ -10,6 +10,11 @@ class SimulationRequest(BaseModel):
     longitude: float = Field(ge=-180, le=180)
 
     crop_name: str = "Tomato"
+    @field_validator("crop_name")
+    @classmethod
+    def validate_crop_name(cls, value):
+        get_crop_profile(value)
+        return value.strip()
 
     planting_date: date
     start_date: date

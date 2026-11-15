@@ -140,3 +140,134 @@ TOMATO_PROFILE = CropProfile(
         GrowthStageThreshold(GrowthStage.MATURITY, 1200),
     ),
 )
+
+def _stages(emergence, vegetative, flowering, development, maturity):
+    return (
+        GrowthStageThreshold(GrowthStage.PLANTED, 0),
+        GrowthStageThreshold(GrowthStage.EMERGENCE, emergence),
+        GrowthStageThreshold(GrowthStage.VEGETATIVE, vegetative),
+        GrowthStageThreshold(GrowthStage.FLOWERING, flowering),
+        GrowthStageThreshold(GrowthStage.FRUIT_DEVELOPMENT, development),
+        GrowthStageThreshold(GrowthStage.MATURITY, maturity),
+    )
+
+
+PEPPER_PROFILE = CropProfile(
+    crop_id="pepper",
+    common_name="Pepper",
+    scientific_name="Capsicum annuum",
+    base_temperature_c=10.0,
+    upper_temperature_c=30.0,
+    stage_thresholds=_stages(60, 220, 650, 950, 1500),
+    max_height_cm=90,
+    mature_biomass_kg_ha=18000,
+)
+
+CUCUMBER_PROFILE = CropProfile(
+    crop_id="cucumber",
+    common_name="Cucumber",
+    scientific_name="Cucumis sativus",
+    base_temperature_c=12.0,
+    upper_temperature_c=32.0,
+    stage_thresholds=_stages(40, 160, 300, 450, 850),
+    max_height_cm=60,
+    mature_biomass_kg_ha=20000,
+)
+
+LETTUCE_PROFILE = CropProfile(
+    crop_id="lettuce",
+    common_name="Lettuce",
+    scientific_name="Lactuca sativa",
+    base_temperature_c=4.0,
+    upper_temperature_c=24.0,
+    stage_thresholds=_stages(35, 100, 250, 350, 550),
+    max_height_cm=30,
+    mature_biomass_kg_ha=15000,
+)
+
+CARROT_PROFILE = CropProfile(
+    crop_id="carrot",
+    common_name="Carrot",
+    scientific_name="Daucus carota",
+    base_temperature_c=4.0,
+    upper_temperature_c=30.0,
+    stage_thresholds=_stages(80, 220, 450, 650, 1100),
+    max_height_cm=35,
+    mature_biomass_kg_ha=45000,
+)
+
+BEAN_PROFILE = CropProfile(
+    crop_id="bean",
+    common_name="Bean",
+    scientific_name="Phaseolus vulgaris",
+    base_temperature_c=8.0,
+    upper_temperature_c=30.0,
+    stage_thresholds=_stages(50, 180, 350, 550, 950),
+    max_height_cm=50,
+    mature_biomass_kg_ha=8000,
+)
+
+STRAWBERRY_PROFILE = CropProfile(
+    crop_id="strawberry",
+    common_name="Strawberry",
+    scientific_name="Fragaria × ananassa",
+    base_temperature_c=5.0,
+    upper_temperature_c=26.0,
+    stage_thresholds=_stages(70, 220, 450, 650, 1000),
+    max_height_cm=25,
+    mature_biomass_kg_ha=12000,
+)
+
+
+CROP_PROFILES = {
+    profile.crop_id: profile
+    for profile in (
+        TOMATO_PROFILE,
+        PEPPER_PROFILE,
+        CUCUMBER_PROFILE,
+        LETTUCE_PROFILE,
+        CARROT_PROFILE,
+        BEAN_PROFILE,
+        STRAWBERRY_PROFILE,
+    )
+}
+
+
+CROP_ALIASES = {
+    "tomatoes": "tomato",
+    "bell pepper": "pepper",
+    "bell peppers": "pepper",
+    "peppers": "pepper",
+    "cucumbers": "cucumber",
+    "lettuces": "lettuce",
+    "carrots": "carrot",
+    "beans": "bean",
+    "green bean": "bean",
+    "green beans": "bean",
+    "strawberries": "strawberry",
+}
+
+
+def get_crop_profile(crop_name: str) -> CropProfile:
+    """Return a registered crop profile by name or alias."""
+
+    if not isinstance(crop_name, str) or not crop_name.strip():
+        raise ValueError("Crop name must be a nonempty string.")
+
+    normalized = " ".join(
+        crop_name.lower()
+        .replace("_", " ")
+        .replace("-", " ")
+        .split()
+    )
+
+    crop_id = CROP_ALIASES.get(normalized, normalized)
+
+    try:
+        return CROP_PROFILES[crop_id]
+    except KeyError:
+        supported = ", ".join(sorted(CROP_PROFILES))
+        raise ValueError(
+            f"Unsupported crop '{crop_name}'. "
+            f"Supported crops: {supported}"
+        ) from None

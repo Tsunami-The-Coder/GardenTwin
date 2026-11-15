@@ -30,8 +30,8 @@ from simulation.water.evapotranspiration import (
     calculate_reference_et,
 )
 from simulation.crops.profiles import (
-    TOMATO_PROFILE,
     determine_growth_stage,
+    get_crop_profile,
 )
 from simulation.crops.thermal_time import (
     calculate_daily_gdd,
@@ -143,60 +143,53 @@ def advance_one_day(
         observation.date - planting_date
     ).days
 
+    
     crop_name = crop.crop_name.strip().lower()
+    profile = get_crop_profile(crop_name)
 
-    if crop_name in ("tomato", "tomatoes"):
-        profile = TOMATO_PROFILE
+    daily_gdd = calculate_daily_gdd(
+        temperature_min_c=observation.temperature_min_c,
+        temperature_max_c=observation.temperature_max_c,
+        base_temperature_c=profile.base_temperature_c,
+        upper_temperature_c=profile.upper_temperature_c,
+    )
 
-        daily_gdd = calculate_daily_gdd(
-            temperature_min_c=observation.temperature_min_c,
-            temperature_max_c=observation.temperature_max_c,
-            base_temperature_c=profile.base_temperature_c,
-            upper_temperature_c=profile.upper_temperature_c,
-        )
+    accumulated_gdd = accumulate_gdd(
+        crop.accumulated_gdd,
+        daily_gdd,
+    )
 
-        accumulated_gdd = accumulate_gdd(
-            crop.accumulated_gdd,
-            daily_gdd,
-        )
+    growth_stage = determine_growth_stage(
+        accumulated_gdd,
+        profile,
+    )
 
-        growth_stage = determine_growth_stage(
-            accumulated_gdd,
-            profile,
-        )
+    nutrient_stress = (
+        nutrient_result.balance.state.nutrient_stress_index
+    )
 
-        nutrient_stress = (
-            nutrient_result.balance.state.nutrient_stress_index
+    height_cm, biomass_kg_ha, health_index = (
+        estimate_stress_adjusted_growth(
+            previous_gdd=crop.accumulated_gdd,
+            current_gdd=accumulated_gdd,
+            previous_height_cm=crop.height_cm or 0.0,
+            previous_biomass_kg_ha=crop.biomass_kg_ha or 0.0,
+            profile=profile,
+            water_stress_index=water_result.water_stress_index,
+            nutrient_stress_index=nutrient_stress,
         )
+    )
 
-        height_cm, biomass_kg_ha, health_index = (
-            estimate_stress_adjusted_growth(
-                previous_gdd=crop.accumulated_gdd,
-                current_gdd=accumulated_gdd,
-                previous_height_cm=crop.height_cm or 0.0,
-                previous_biomass_kg_ha=(
-                    crop.biomass_kg_ha or 0.0
-                ),
-                profile=profile,
-                water_stress_index=water_result.water_stress_index,
-                nutrient_stress_index=nutrient_stress,
-            )
-        )
+    updated_crop = replace(
+        crop,
+        days_after_planting=days_after_planting,
+        accumulated_gdd=accumulated_gdd,
+        growth_stage=growth_stage.value,
+        height_cm=height_cm,
+        biomass_kg_ha=biomass_kg_ha,
+        health_index=health_index,
+    )
 
-        updated_crop = replace(
-            crop,
-            days_after_planting=days_after_planting,
-            accumulated_gdd=accumulated_gdd,
-            growth_stage=growth_stage.value,
-            height_cm=height_cm,
-            biomass_kg_ha=biomass_kg_ha,
-            health_index=health_index,
-        )
-    else:
-        updated_crop = replace(
-            crop,
-            days_after_planting=days_after_planting,
-        )
 
     recommended_amount = water_result.irrigation_recommendation_mm
 
@@ -218,25 +211,22 @@ def advance_one_day(
             confidence=None,
         )
 
-        # Estimate daily nutrient uptake from modeled daily biomass gain.
-    # These are illustrative tomato tissue-composition assumptions,
-    # not measured soil availability or fertilizer application rates.
-    estimated_n = None
-    estimated_p = None
-    estimated_k = None
+    
+    # Estimate daily nutrient uptake from modeled daily biomass gain.
+    # These are generic illustrative tissue-composition assumptions,
+    # not crop-calibrated measurements or fertilizer application rates.
+    previous_biomass = crop.biomass_kg_ha or 0.0
+    current_biomass = updated_crop.biomass_kg_ha or 0.0
 
-    if crop_name in ("tomato", "tomatoes"):
-        previous_biomass = crop.biomass_kg_ha or 0.0
-        current_biomass = updated_crop.biomass_kg_ha or 0.0
+    daily_biomass_gain = max(
+        0.0,
+        current_biomass - previous_biomass,
+    )
 
-        daily_biomass_gain = max(
-            0.0,
-            current_biomass - previous_biomass,
-        )
+    estimated_n = daily_biomass_gain * 0.030
+    estimated_p = daily_biomass_gain * 0.005
+    estimated_k = daily_biomass_gain * 0.035
 
-        estimated_n = daily_biomass_gain * 0.030
-        estimated_p = daily_biomass_gain * 0.005
-        estimated_k = daily_biomass_gain * 0.035
 
     soil_test_available = (
         nutrient_result.balance.state.soil_test_available
