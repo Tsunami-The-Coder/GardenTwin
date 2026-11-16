@@ -327,7 +327,7 @@ pnpm build
 
 The frontend build type-checks the app and writes browser assets to `frontend/dist/client`. Optional Sites packaging is retained; `pnpm test:sites` checks that packaging when needed. A static build alone does not start the Python API. You can log in to http://127.0.0.1:5174/ to see the app.
 
-The previous team verification record reported 150 passing backend tests, successful API runs for seven crops, and an AI response containing four system entries without artifact-loading errors in the tested environment. That is a team-reported execution record, not a fresh-install guarantee or evidence of four live models. No new runtime verification is claimed by this documentation-only revision.
+The previous team verification record reported 150 passing backend tests, successful API runs for seven crops, and an AI response containing four system entries without artifact-loading errors in the tested environment. That is a team-reported execution record, not a fresh-install guarantee or evidence of four live models. Fresh verification is documented in [Results and evidence](#results-and-evidence) below; it covers an explicitly identified core subset and controlled simulation.
 
 Software tests verify execution and contracts. They do not establish predictive accuracy, agronomic calibration or climate impact. Evaluation still needs held-out reference observations, forecast inputs restricted to information available at prediction time, and consistent comparisons of water use, stress and growth. Generalized crop profiles, missing nutrient evidence, saved-artifact relevance and model-environment reproducibility remain important limitations.
 
@@ -392,3 +392,91 @@ AgriFM-E names an intended integration represented by an analytical fallback, no
 Development and design assistance includes [OpenAI ChatGPT/Codex](https://openai.com/codex/), OpenAI ImageGen, [Google Stitch](https://stitch.withgoogle.com/) and [Canva](https://www.canva.com/). AI-assisted development is distinct from the environmental-model inference used by GardenTwin and does not establish scientific validation.
 
 **GardenTwin: learn what plants need, care for them thoughtfully, and explore how that care connects to the climate around us.**
+
+## Results and evidence
+
+Verification date: **November 15, 2026 (Eastern Time)**. The checks below used an unchanged temporary copy of source commit [`ed7d661`](https://github.com/Tsunami-The-Coder/GardenTwin/tree/ed7d66118a69cff72d70b202fedfe602e0dfacee). No backend, frontend, AI implementation or simulation equations were edited to obtain these results.
+
+### 1. Fresh core software verification
+
+**85 tests passed across 14 test modules, with 0 failures, 0 errors and 0 skips.** These checks were executed with Python **3.15.2** using the standard-library `unittest` runner. This is a selected core subset, not a rerun of the full pytest suite, browser integration or model inference. The recommended application environment remains Python 3.12.
+
+```text
+.....................................................................................
+----------------------------------------------------------------------
+Ran 85 tests in 0.008s
+
+OK
+```
+
+The executed tests cover crop profiles, thermal time, daily simulation, season state progression, root-zone water balance, evapotranspiration, drainage, nutrient balance/leaching/losses, missing-data handling, overview date validation and mocked weather-provider responses. Evidence: [the tests at the checked commit](https://github.com/Tsunami-The-Coder/GardenTwin/tree/ed7d66118a69cff72d70b202fedfe602e0dfacee/tests). The timing is one local test run, not an inference-performance benchmark.
+
+To run the same subset from the repository root:
+
+```bash
+PYTHONPATH=tests python -m unittest \
+  test_crop_profiles test_daily_nutrients test_drainage test_engine \
+  test_evapotranspiration test_gardenwin test_nasa_power \
+  test_nutrient_balance test_nutrient_leaching test_season \
+  test_soil_losses test_soil_properties test_thermal_time test_water_balance
+```
+
+### 2. Controlled garden simulation results
+
+A separate execution of the existing season engine completed **all seven crops**, with **30 daily records per crop: 210 records total**. Crops: Bean, Carrot, Cucumber, Lettuce, Pepper, Strawberry and Tomato. Fertilizer status remained **unknown in all 210 records**, correctly retaining the absence of soil-test evidence.
+
+**These are executed model outputs under synthetic, controlled inputs—not measured gardens, historical-weather retrievals or AI predictions.** The experiment called the existing [season engine](https://github.com/Tsunami-The-Coder/GardenTwin/blob/ed7d66118a69cff72d70b202fedfe602e0dfacee/simulation/season.py) and, for Tomato, the existing [irrigation comparison service](https://github.com/Tsunami-The-Coder/GardenTwin/blob/ed7d66118a69cff72d70b202fedfe602e0dfacee/backend/services/intervention_service.py). It did not use the frontend's example JSON.
+
+| Controlled input | Value |
+| --- | --- |
+| Simulation dates / planting date | June 7–July 6, 2022 / May 1, 2022 |
+| Site coordinates / elevation | 39.45, −75.23 / 0 m |
+| Daily temperature, minimum / mean / maximum | 15 / 22 / 29 °C |
+| Daily rainfall / relative humidity | 2 mm / 60% |
+| Daily solar radiation / wind at 2 m | 20 MJ/m²/day / 2 m/s |
+| Soil wilting point / field capacity / saturation | 0.12 / 0.30 / 0.45, volumetric fractions |
+| Root depth / hydraulic conductivity | 30 cm / 10 mm/day |
+| Initial root-zone water / crop coefficient | 90 mm, at field capacity / 1.0 |
+| Irrigation efficiency / depletion fraction | 0.90 / 0.50 |
+| Nutrient soil test | Unavailable |
+
+The Tomato comparison used identical inputs and initial states. The intervention applied each rain-fed baseline day's recommended irrigation on that same day, exactly as implemented in the service.
+
+| Output over 30 days | Rain-fed baseline | Fixed recommended-irrigation intervention |
+| --- | ---: | ---: |
+| Applied irrigation | 0.00 mm | 894.68 mm |
+| Mean modeled water stress, 0–1 | 0.3274 | 0.0000 |
+| Maximum modeled water stress, 0–1 | 0.6318 | 0.0000 |
+| Days with modeled water stress | 20 | 0 |
+| Final modeled biomass | 1,155.50 kg/ha | 1,971.80 kg/ha |
+| Final crop health index | Unknown | Unknown |
+
+The returned differences were **0.3274 less mean modeled water stress** and **816.30 kg/ha more modeled biomass**. They demonstrate the engine's response to water availability under its assumptions, not improved real-world yield or AI accuracy.
+
+**The 894.68 mm irrigation total is an important limitation, not a watering recommendation or evidence of water savings.** The current comparison repeatedly uses recommendations from the rain-fed baseline rather than recalculating a schedule from the already-irrigated scenario. This experiment therefore does not establish efficient irrigation, an optimal schedule or field benefit. It identifies a concrete behavior to evaluate in future development.
+
+### 3. Numerical evidence from the saved Earth-2 result
+
+The committed [FourCastNet1/GFS output](https://github.com/Tsunami-The-Coder/GardenTwin/blob/ed7d66118a69cff72d70b202fedfe602e0dfacee/data/earth2_garden_forecast.json) contains these values:
+
+| Saved output | Value |
+| --- | --- |
+| Model / input source | NVIDIA FourCastNet1 via Earth2Studio / GFS |
+| Initialization | November 15, 2026, 00:00 UTC |
+| Valid time / forecast lead | November 15, 2026, 06:00 UTC / 6 hours |
+| Requested location | 39.4273, −75.2341 |
+| Selected model grid point | 39.5, 284.75° east, equivalent to −75.25° |
+| Predicted temperature | 6.1001 °C |
+| Predicted wind speed at 10 m | 4.3837 m/s |
+| Predicted mean sea-level pressure | 1,016.1530 hPa |
+| Predicted total-column water vapor | 11.6976 kg/m² |
+
+These numbers were read directly from the saved JSON; **fresh Earth-2 inference was not rerun during this verification**. Its valid time has passed, and its location is not the Edison pilot coordinate. It is historical model-output evidence, not a current garden forecast. Total-column water vapor is not rainfall. Without matching observations and original execution logs, the file alone does not establish predictive accuracy or independently verify how it was generated.
+
+Saved [Aurora](https://github.com/Tsunami-The-Coder/GardenTwin/blob/ed7d66118a69cff72d70b202fedfe602e0dfacee/data/aurora_real_prediction.pt) and [Prithvi](https://github.com/Tsunami-The-Coder/GardenTwin/blob/ed7d66118a69cff72d70b202fedfe602e0dfacee/ai/data/prithvi/prithvi_features.pt) binary outputs also exist. They were not deserialized or regenerated in this check, so no new numerical inference claim is made for them. AgriFM-E remains an analytical fallback.
+
+### What this evidence establishes
+
+The fresh checks establish that the selected core tests pass and that the unchanged simulation can generate seven crop seasons, preserve unknown fertilizer information and respond to an irrigation intervention. The saved Earth-2 file supplies concrete atmospheric-model output for a recorded place and time.
+
+They do **not** establish held-out AI accuracy, a calibrated fertilizer dose, optimized water use, measured plant-health improvement, carbon sequestration or verified climate impact. Those require relevant observations, independent evaluation and additional implementation. This distinction separates actual results from the project's intended environmental benefits.
