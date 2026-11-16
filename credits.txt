@@ -1,0 +1,420 @@
+# GardenTwin — Credits and Acknowledgments
+
+**Project:** GardenTwin  
+**Competition:** Veritas AI International High School Hackathon 2026 — Climate Track  
+**Repository:** https://github.com/Tsunami-The-Coder/tbd  
+**Credits last updated:** November 15, 2026
+
+---
+
+## 1. Project code and original work
+
+GardenTwin is an original project developed by its team. The team designed and implemented the garden simulation backend, crop profiles, soil and nutrient calculations, API endpoints, intervention comparisons, and integration pipelines.
+
+**Project repository:**  
+https://github.com/Tsunami-The-Coder/tbd
+
+The following components were implemented as part of GardenTwin:
+
+- Daily garden simulation engine
+- Crop growth and thermal-time calculations
+- Seven crop profiles: tomato, pepper, cucumber, lettuce, carrot, bean, and strawberry
+- Soil-water simulation
+- Nutrient balance and leaching calculations
+- Illustrative crop nutrient-demand calculations
+- Irrigation intervention comparisons
+- Historical weather ingestion and fallback handling
+- Soil data ingestion
+- Satellite imagery processing and pretrained-model integration
+- AI analysis pipeline and API endpoints
+- Automated tests and validation infrastructure
+
+The GardenTwin team is responsible for its own implementation and for the project-specific assumptions and integration logic described in this document.
+
+No third-party source-code repository has been confirmed as the source of copied GardenTwin application code. The external frameworks, models, and datasets listed below are credited separately.
+
+---
+
+## 2. Weather and climate data
+
+### NASA POWER
+
+**Provider:** NASA Langley Research Center  
+**Resource:** Prediction of Worldwide Energy Resources (POWER)  
+**Official documentation:** https://power.larc.nasa.gov/docs/  
+**Daily API documentation:** https://power.larc.nasa.gov/docs/services/api/temporal/daily/  
+**API overview:** https://power.larc.nasa.gov/docs/services/api/
+
+**How GardenTwin uses it:**
+
+NASA POWER is the primary source for historical daily weather and climate information used by the garden simulation. The backend retrieves regional meteorological and solar variables for the garden's location and simulation dates.
+
+This information contributes to the environmental conditions used by the crop-growth and soil-water calculations.
+
+### Open-Meteo
+
+**Provider:** Open-Meteo  
+**Official website:** https://open-meteo.com/  
+**Historical Weather API:** https://open-meteo.com/en/docs/historical-weather-api  
+**Forecast API:** https://open-meteo.com/en/docs  
+**Historical Forecast API:** https://open-meteo.com/en/docs/historical-forecast-api  
+**API source code:** https://github.com/open-meteo/open-meteo
+
+**How GardenTwin uses it:**
+
+Open-Meteo provides supplementary weather information when NASA POWER data is missing required variables. It is also used to retrieve short-range weather forecasts for the forecast and intervention workflow.
+
+The forecast data helps GardenTwin evaluate how upcoming environmental conditions could affect the modeled garden.
+
+Open-Meteo's API specification identifies the historical weather API as using ERA5 and ERA5-Land reanalysis products. Its API specification also identifies a CC BY 4.0 license for the historical-weather API description. Data and service terms should be checked for the particular endpoint being used.
+
+### ECMWF ERA5
+
+**Provider:** European Centre for Medium-Range Weather Forecasts (ECMWF) and Copernicus Climate Change Service  
+**Official ERA5 information:** https://www.ecmwf.int/en/forecasts/datasets/complete-era5-global-atmospheric-reanalysis  
+**ERA5 documentation:** https://confluence.ecmwf.int/pages/viewpage.action?pageId=216494465  
+**Climate Data Store:** https://cds.climate.copernicus.eu/
+
+**How GardenTwin uses it:**
+
+ERA5 is the historical weather dataset associated with the saved Microsoft Aurora inference artifact.
+
+The Aurora artifact was generated using historical ERA5 data from June 15, 2022. It is a cached historical model result, not a live weather prediction for the GardenTwin simulation period.
+
+ERA5 is therefore credited as an underlying dataset used by the model artifact, not as the primary live weather feed for GardenTwin.
+
+### NOAA Global Forecast System (GFS)
+
+**Provider:** National Oceanic and Atmospheric Administration (NOAA)  
+**Official GFS information:** https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast  
+**NCEP model information:** https://www.nco.ncep.noaa.gov/pmb/products/gfs/
+
+**How GardenTwin uses it:**
+
+GFS weather data was used as the input source for a saved NVIDIA FourCastNet1 inference artifact through NVIDIA Earth2Studio.
+
+The saved artifact was initialized on November 15, 2026 at 00:00 UTC and had a valid time of 06:00 UTC. This artifact is historical relative to later simulation dates and should not be represented as a current or continuously updated forecast.
+
+---
+
+## 3. Soil data
+
+### USDA NRCS SSURGO
+
+**Provider:** United States Department of Agriculture (USDA), Natural Resources Conservation Service (NRCS)  
+**SSURGO Portal:** https://www.nrcs.usda.gov/resources/data-and-reports/ssurgo-portal  
+**Web Soil Survey:** https://websoilsurvey.nrcs.usda.gov/  
+**Soil Data Access:** https://sdmdataaccess.nrcs.usda.gov/
+
+**How GardenTwin uses it:**
+
+GardenTwin retrieves soil-survey information for the selected garden location using USDA SSURGO data.
+
+The soil information provides a real-world geographic soil-data foundation for the simulation, rather than relying entirely on manually invented soil characteristics.
+
+**Important limitation:** SSURGO map-unit information is not equivalent to a laboratory soil test from the user's individual garden. GardenTwin does not currently have verified measurements of the garden's actual available nitrogen, phosphorus, or potassium. Nutrient availability and fertilizer recommendations must therefore remain unknown unless appropriate soil-test information is supplied.
+
+---
+
+## 4. Satellite imagery and Earth observation
+
+### NASA Harmonized Landsat and Sentinel-2 (HLS)
+
+**Provider:** NASA  
+**Official HLS website:** https://hls.gsfc.nasa.gov/  
+**Documentation:** https://hls.gsfc.nasa.gov/documents/  
+**NASA HLS data resources:** https://github.com/nasa/HLS-Data-Resources  
+**Dataset publication:** https://doi.org/10.1016/j.rse.2025.114723
+
+**How GardenTwin uses it:**
+
+GardenTwin downloaded and processed NASA HLS satellite imagery for the Prithvi-EO-2.0 pipeline.
+
+The available imagery observations used in the project include:
+
+- June 2, 2025
+- June 25, 2025
+- July 25, 2025
+- August 29, 2025
+
+HLS provides harmonized satellite observations derived from Landsat and Sentinel-2. These observations are used as inputs to the pretrained geospatial model pipeline.
+
+**Important limitation:** The current Prithvi integration performs pretrained feature extraction. It does not constitute a trained GardenTwin crop-disease classifier or a validated crop-health prediction system.
+
+---
+
+## 5. Pretrained AI models
+
+The following models and model-related projects are credited because they were evaluated, integrated, or used to generate artifacts in GardenTwin.
+
+### Microsoft Aurora Small
+
+**Developer:** Microsoft Research  
+**Official GitHub repository:** https://github.com/microsoft/aurora  
+**Documentation:** https://microsoft.github.io/aurora/  
+**Research paper:** https://doi.org/10.1038/s41586-025-09005-y
+
+**How GardenTwin uses it:**
+
+Aurora is a pretrained foundation model for Earth-system forecasting. GardenTwin includes a saved Aurora inference artifact generated using historical ERA5 weather data.
+
+The artifact contains regional atmospheric information and model-derived weather variables.
+
+**Actual project status:**
+
+- Pretrained model artifact exists.
+- Historical inference was successfully performed.
+- The saved artifact is from June 15, 2022.
+- It is not a live inference service for each GardenTwin simulation.
+- Its historical date does not match the November 2026 demonstration period.
+
+Aurora is credited as an external pretrained model. GardenTwin did not create or train the original Aurora foundation model.
+
+### NASA/IBM Prithvi-EO-2.0 300M
+
+**Developers:** NASA, IBM Research, and collaborating research institutions  
+**Official GitHub repository:** https://github.com/NASA-IMPACT/Prithvi-EO-2.0  
+**300M pretrained model:** https://huggingface.co/ibm-nasa-geospatial/Prithvi-EO-2.0-300M  
+**Research and model information:** https://github.com/NASA-IMPACT/Prithvi-EO-2.0
+
+**How GardenTwin uses it:**
+
+Prithvi-EO-2.0 is a geospatial foundation model pretrained on multi-temporal Earth-observation imagery.
+
+GardenTwin uses the 300-million-parameter pretrained model with NASA HLS imagery to extract geospatial features from satellite observations.
+
+**Actual project status:**
+
+- Pretrained model artifact exists.
+- Feature extraction was performed using HLS observations.
+- The available observations are from 2025.
+- The model has not been fine-tuned into a GardenTwin-specific crop-health classifier.
+- The observations do not overlap the November 2026 demonstration period.
+
+GardenTwin credits the original Prithvi model and its developers. The project does not claim ownership of the pretrained weights or original architecture.
+
+### NVIDIA FourCastNet1 through Earth2Studio
+
+**Developer:** NVIDIA  
+**Earth2Studio GitHub repository:** https://github.com/NVIDIA/earth2studio  
+**Earth2Studio documentation:** https://nvidia.github.io/earth2studio/  
+**NVIDIA Earth-2 information:** https://www.nvidia.com/en-us/high-performance-computing/earth-2/
+
+**How GardenTwin uses it:**
+
+NVIDIA Earth2Studio provides an open-source framework for running pretrained weather and climate models.
+
+GardenTwin used Earth2Studio to run a pretrained FourCastNet1 weather-model inference workflow using GFS input data.
+
+**Actual project status:**
+
+- A saved pretrained inference artifact exists.
+- The artifact was generated using GFS data.
+- Its initialization time was November 15, 2026 at 00:00 UTC.
+- The saved output is not a continuously updated forecast for later GardenTwin simulation dates.
+- Earth2Studio is the inference framework; FourCastNet1 is the underlying model.
+
+NVIDIA Earth2Studio is licensed under Apache License 2.0 according to its repository. The model's own terms should also be checked separately.
+
+### AgriFM-E / AgriScienceFM
+
+**Project:** AgriScienceFM  
+**Official website:** https://www.agriscience.fm/  
+**Foundation-model information:** https://agriscience.fm.wur.nl/foundation-models/
+
+**How GardenTwin uses it:**
+
+AgriFM-E is an agricultural environment foundation-model concept designed around environmental information such as satellite imagery, weather, soil, and crop phenology.
+
+GardenTwin's AgriFM-E pipeline currently uses an analytical fallback based on available garden simulation records, including crop, water, nutrient, and weather information.
+
+**Actual project status:**
+
+- The AgriFM-E analytical assessment is present in the AI pipeline.
+- A verified official pretrained AgriFM-E checkpoint has not been integrated.
+- The current GardenTwin implementation should not be described as running pretrained AgriFM-E inference.
+
+The AgriScienceFM project is credited for the model concept and research direction. GardenTwin's fallback assessment is its own implementation and should not be attributed to the AgriScienceFM developers.
+
+---
+
+## 6. Software libraries and development frameworks
+
+The following frameworks and libraries are part of the known GardenTwin implementation and testing environment.
+
+| Software | Official source | Purpose in GardenTwin |
+|---|---|---|
+| Python | https://www.python.org/ | Main programming language |
+| FastAPI | https://fastapi.tiangolo.com/ | Backend API and HTTP endpoints |
+| Pydantic | https://docs.pydantic.dev/ | API request and response validation |
+| NumPy | https://numpy.org/ | Numerical calculations and array operations |
+| PyTorch | https://pytorch.org/ | Pretrained model inference and tensor operations |
+| NVIDIA Earth2Studio | https://github.com/NVIDIA/earth2studio | Earth-system model inference workflows |
+| NVIDIA PhysicsNeMo | https://github.com/NVIDIA/physicsnemo | NVIDIA scientific machine-learning framework used in the model environment |
+| pytest | https://docs.pytest.org/ | Automated testing |
+
+**Environment information:**
+
+- Python version: 3.12.3
+- Operating environment: WSL Ubuntu on Windows
+- GPU used for local model work: NVIDIA RTX 4060 Laptop GPU
+- Backend API: FastAPI
+- Schema validation: Pydantic v2
+
+The exact installed package versions should be taken from the project's dependency files or a recorded environment export. This document does not invent package version numbers.
+
+---
+
+## 7. GardenTwin's own simulation methods and assumptions
+
+The following are project-specific implementations and assumptions. They are not pretrained external models.
+
+### Thermal-time and growing-degree-day calculations
+
+GardenTwin uses temperature-based thermal-time calculations to estimate crop development.
+
+The project calculates daily growing-degree-day contributions and accumulates them to represent crop development over time.
+
+This is a common agricultural modeling concept, implemented within GardenTwin's own crop simulation code.
+
+### Crop profiles and growth calculations
+
+GardenTwin contains seven crop profiles:
+
+1. Tomato
+2. Pepper
+3. Cucumber
+4. Lettuce
+5. Carrot
+6. Bean
+7. Strawberry
+
+Each profile contains crop-specific parameters such as temperature thresholds, development-stage thresholds, maximum height, and biomass-related parameters.
+
+The profiles are project-specific approximations. The additional crop profiles use a generalized growth framework and have not been calibrated against independent field measurements.
+
+### Soil-water simulation and irrigation comparisons
+
+GardenTwin implements its own soil-water simulation and irrigation intervention logic.
+
+It uses weather conditions and modeled soil-water state to estimate whether irrigation may be useful and to compare alternative irrigation interventions.
+
+These calculations are part of GardenTwin's original backend implementation.
+
+### Nutrient balance, leaching, and nutrient demand
+
+GardenTwin implements its own nutrient-balance and leaching calculations.
+
+The current generic illustrative nutrient-uptake assumptions are:
+
+- Nitrogen: 0.030 × daily biomass gain
+- Phosphorus: 0.005 × daily biomass gain
+- Potassium: 0.035 × daily biomass gain
+
+These are internal illustrative assumptions, not experimentally calibrated GardenTwin coefficients, verified fertilizer application rates, or a substitute for a soil test.
+
+GardenTwin does not currently calculate validated fertilizer product dosages.
+
+### Intervention and recommendation logic
+
+GardenTwin combines simulation state and available environmental information to support decisions about watering and garden management.
+
+The recommendation and intervention logic is implemented by the GardenTwin team. It should not be mistaken for a direct output from any of the pretrained foundation models listed above.
+
+---
+
+## 8. AI-assisted development tools
+
+### ChatGPT — OpenAI
+
+**Official website:** https://chatgpt.com/  
+**OpenAI:** https://openai.com/
+
+ChatGPT was used as a development-assistance tool during project planning, code development, debugging, testing guidance, technical explanations, and documentation.
+
+ChatGPT is not a model that GardenTwin calls as part of its deployed simulation API. Its development assistance should be distinguished from the pretrained models used within the GardenTwin AI pipeline.
+
+The GardenTwin team is responsible for reviewing, testing, integrating, and understanding the submitted project code.
+
+---
+
+## 9. Veritas AI hackathon references
+
+**Organizer:** Veritas AI  
+**Official hackathon website:** https://highschoolhackathon.org/  
+**Project briefs and submission requirements:** https://highschoolhackathon.org/briefs  
+**2026 project briefs PDF:** https://drive.google.com/file/d/15tYD48XRmCgWbk1_lLDtc8lebi6qm-4-/view
+
+The project was developed for the Climate track of the 2026 Veritas AI International High School Hackathon.
+
+The official submission requirements specify that teams must credit every dataset, pretrained model, tutorial, and AI tool used, with links.
+
+They also require teams to:
+
+- Make AI or machine learning central to the project.
+- Use public or synthetic data.
+- Explain the work and be able to describe its components.
+- Report results that were actually obtained.
+- Identify the work contributed by the team.
+- Provide a working, accessible code link and project write-up.
+
+GardenTwin's climate focus connects environmental information to a practical decision: using historical and forecast climate conditions to evaluate watering and garden-management interventions, then examining their modeled effects on soil water, plant stress, and crop development.
+
+---
+
+## 10. Sources considered but not represented as integrated components
+
+The following distinctions are important for accurate attribution.
+
+| Source or technology | Status in GardenTwin |
+|---|---|
+| Rutgers agricultural and regional climate data | Discussed as a possible source; not confirmed integrated |
+| NOAA GHCN-Daily station records | Discussed as a possible source; not confirmed integrated |
+| AquaCrop | Discussed as a possible crop-model reference; not the implemented growth engine |
+| Qwen | Mentioned during early AI planning; not part of the confirmed GardenTwin runtime pipeline |
+| Pretrained AgriFM-E checkpoint | Not integrated; current implementation is an analytical fallback |
+| Live Aurora inference for each simulation | Not implemented |
+| Live Prithvi crop-health classification | Not implemented |
+| Continuously updated FourCastNet1 forecasts | Not implemented |
+
+These sources are listed for transparency, not as claims of actual data or model integration.
+
+---
+
+## 11. Licensing and attribution notes
+
+GardenTwin uses third-party software, model artifacts, and external datasets. Their licenses and terms are separate from the GardenTwin team's own code.
+
+Before redistribution or public release, the team should verify:
+
+- The license of each software package.
+- The license and usage restrictions for each pretrained model's code and weights.
+- The terms of use and attribution requirements for each dataset and API.
+- Whether any model weights have separate terms from the repository containing their implementation.
+- Whether the GardenTwin repository has its own license file.
+
+The presence of a public GitHub repository does not automatically mean that all associated model weights or datasets may be redistributed.
+
+---
+
+## 12. Attribution summary
+
+GardenTwin combines original team-developed software with publicly documented data sources, pretrained research models, and open-source software frameworks.
+
+The external contributions acknowledged in this document include:
+
+- NASA POWER for historical meteorological and solar data.
+- Open-Meteo for supplementary historical weather and forecast data.
+- USDA NRCS for SSURGO soil-survey information.
+- NASA for Harmonized Landsat and Sentinel-2 imagery.
+- ECMWF and Copernicus for ERA5 data used in the Aurora artifact.
+- NOAA for GFS data used in the FourCastNet1 artifact.
+- Microsoft Research for Aurora.
+- NASA and IBM Research and their collaborators for Prithvi-EO-2.0.
+- NVIDIA for Earth2Studio and the FourCastNet1 inference framework.
+- AgriScienceFM for the AgriFM-E research direction.
+- The developers of Python, FastAPI, Pydantic, NumPy, PyTorch, PhysicsNeMo, and pytest.
+- OpenAI for ChatGPT development assistance.
+- Veritas AI for the 2026 International High School Hackathon and its Climate challenge.
+
+**The GardenTwin team's original contribution is the integration of these resources into a location-specific garden simulation and decision-support backend, together with its own crop, soil-water, nutrient, intervention, and API implementations.**
