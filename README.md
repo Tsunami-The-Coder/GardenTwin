@@ -325,7 +325,7 @@ pnpm test
 pnpm build
 ```
 
-The frontend build type-checks the app and writes browser assets to `frontend/dist/client`. Optional Sites packaging is retained; `pnpm test:sites` checks that packaging when needed. A static build alone does not start the Python API.
+The frontend build type-checks the app and writes browser assets to `frontend/dist/client`. Optional Sites packaging is retained; `pnpm test:sites` checks that packaging when needed. A static build alone does not start the Python API. You can log in to http://127.0.0.1:5174/ to see the app.
 
 The previous team verification record reported 150 passing backend tests, successful API runs for seven crops, and an AI response containing four system entries without artifact-loading errors in the tested environment. That is a team-reported execution record, not a fresh-install guarantee or evidence of four live models. No new runtime verification is claimed by this documentation-only revision.
 
