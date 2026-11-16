@@ -1,462 +1,394 @@
 # GardenTwin 🌱
 
-### Climate intelligence for everyday garden decisions
+### AI-assisted garden care for a more climate-resilient future
 
-**Veritas AI Hackathon · AI + Climate · New Jersey, USA**
+**Built for the [2026 Veritas AI International High School Hackathon](https://highschoolhackathon.org/briefs) · Climate track**
 
-GardenTwin is a locally run garden digital twin that connects weather and soil information to two practical questions: **Should I water my garden, and what can I responsibly conclude about its fertilizer needs?**
+GardenTwin brings AI environmental evidence, weather, soil information and a daily garden simulation into one website. It helps home gardeners and community gardens understand **when to water, how much water the model recommends, and what evidence is needed before applying fertilizer**.
 
-Users configure a location, crop, planting date and soil settings. A daily simulation estimates root-zone water, crop development and nutrient demand, explains irrigation recommendations, and compares a rain-fed scenario with modeled irrigation. Separate AI analysis combines saved pretrained-model outputs with clearly identified analytical fallbacks.
+The idea is a cycle: understand the environment, help people care for plants, support plant growth, and encourage the environmental benefits that healthy vegetation can provide. AI contributes atmospheric and satellite evidence; the digital twin translates weather, soil and crop assumptions into understandable daily estimates.
 
-**Current status:** a working local backend/API demo, with the browser frontend under development. The frontend setup and demo section below will be completed when that work is ready.
-
-GardenTwin supports gardening decisions; it does not operate irrigation equipment or apply fertilizer automatically. Its outputs are modeled estimates, not measurements from a connected garden.
+**The React frontend and FastAPI backend are both included.** Run them together locally or in GitHub Codespaces using the instructions below. The current implementation combines saved pretrained-model results, a process-based simulation and explicitly identified analytical fallbacks. Starting the website does not start fresh inference in every AI model.
 
 ## Contents
 
-- [Why GardenTwin](#why-gardentwin)
-- [What the demo does](#what-the-demo-does)
+- [The problem and the Veritas connection](#the-problem-and-the-veritas-connection)
+- [The garden–climate cycle](#the-gardenclimate-cycle)
+- [What the program does](#what-the-program-does)
+- [AI architecture and fallback behavior](#ai-architecture-and-fallback-behavior)
 - [Run locally](#run-locally)
-- [Try a simulation](#try-a-simulation)
-- [Frontend demo](#frontend-demo)
-- [How the simulation works](#how-the-simulation-works)
-- [AI architecture](#ai-architecture)
-- [Environmental data](#environmental-data)
+- [Run in GitHub Codespaces](#run-in-github-codespaces)
+- [Use the website](#use-the-website)
+- [How the code works](#how-the-code-works)
 - [API reference](#api-reference)
 - [Testing and evaluation](#testing-and-evaluation)
-- [Limitations](#limitations)
-- [Project structure](#project-structure)
-- [Future development](#future-development)
-- [Team and credits](#team-and-credits)
+- [Development plan](#development-plan)
+- [Project structure and credits](#project-structure-and-credits)
 
-## Why GardenTwin
+## The problem and the Veritas connection
 
-A weather forecast does not directly tell a gardener how much water a plant needs. The same rainfall can have different effects depending on the soil, root depth, crop and stage of development. Fertilizer decisions need a further distinction: estimated plant demand does not establish what nutrients are already available in the soil.
+A rainfall forecast alone cannot tell a gardener whether the root zone has enough water. Soil properties, temperature, crop development and recent conditions all matter. Fertilizer decisions need another piece of evidence: estimated crop demand does not reveal how much nitrogen, phosphorus or potassium is already in the soil.
 
-GardenTwin brings these variables together so users can explore a growing season, understand the reasoning behind a recommendation, and compare water use with modeled crop outcomes.
+GardenTwin connects those questions in a single workflow rather than asking users to interpret disconnected weather charts and soil values. The pilot is a tomato garden in Edison, New Jersey; the simulation also supports Pepper, Cucumber, Lettuce, Carrot, Bean and Strawberry.
 
-The pilot focuses on tomatoes in Edison, New Jersey. The simulation also supports six other garden crops.
+For the Veritas Climate track, our focus is:
 
-### Prediction → decision → simulated outcome
+| Project goal | GardenTwin's approach |
+| --- | --- |
+| Apply AI to a climate-related problem | Explore pretrained atmospheric and Earth-observation models alongside a garden digital twin. |
+| Help people make practical decisions | Explain daily watering needs, modeled stress and responsible nutrient next steps. |
+| Make the work reproducible | Include the browser interface, API, source data references and startup instructions. |
+| Evaluate and communicate honestly | Distinguish pretrained inference, saved outputs, analytical fallbacks and illustrative fixtures; separate software checks from scientific validation. |
+
+Our contribution is the garden-focused workflow, simulation and decision explanations, integration of model evidence, and interactive interface. We use and credit existing pretrained models; we do not claim to have trained Aurora, Prithvi or FourCastNet from scratch. Veritas requires AI or machine learning to perform the main task and results to reflect actual work. The current separation between AI evidence and simulation recommendations is described below so readers can assess that integration accurately. See the official [submission requirements](https://highschoolhackathon.org/briefs) and [judging criteria](https://highschoolhackathon.org/judges).
+
+## The garden–climate cycle
+
+**Understand conditions → guide care → support plants → contribute to the environment → understand changing conditions again.**
 
 ```mermaid
 flowchart LR
-    A[Location, crop, dates and soil settings] --> B[Historical weather and soil lookup]
-    B --> C[Daily garden simulation]
-    C --> D[Watering and nutrient assessments]
-    C --> E[Rain-fed versus irrigated comparison]
-    C --> F[Separate AI evidence and analysis]
-    D --> G[Gardener evaluates the options]
-    E --> G
-    F --> G
-    H[Upcoming weather forecast] --> I[Model continuation when dates align]
-    I --> G
+    A[Weather, soil and environmental conditions] --> B[AI evidence and garden simulation]
+    B --> C[Gardener learns about water and nutrient needs]
+    C --> D[Gardener chooses appropriate plant care]
+    D --> E[Plants grow and interact with their environment]
+    E --> F[Potential benefits to people and the local environment]
+    F --> A
 ```
 
-The AI evidence layer is separate from the daily simulation. A saved model artifact is not automatically used as a new weather prediction for each run.
+GardenTwin helps the user learn what the modeled garden needs. The user can then choose watering and soil-informed fertilization practices. In turn, plants provide food and interact with the environment through growth, carbon uptake, shade and evapotranspiration. Thoughtful resource use can also help avoid unnecessary watering and excess fertilizer losses. These are the motivations behind the cycle; benefits depend on the crop, site and management. See the EPA's explanations of [vegetation and cooling](https://www.epa.gov/heatislands/using-trees-and-vegetation-reduce-heat-islands) and [nutrient management](https://www.epa.gov/nutrientpollution/sources-and-solutions-agriculture).
 
-### Climate relevance
+The diagram describes the environmental idea, not an automated control or learning loop. GardenTwin does not operate irrigation equipment, observe the user's actions through sensors, or retrain itself from plant outcomes. It does not currently calculate verified carbon sequestration, net emissions reductions, local cooling or field-measured water savings.
 
-The project explores more informed water use, nutrient management and adaptation to changing weather. Plants also interact with the environment through biomass accumulation, shade and evapotranspiration. Those connections motivate the project; they are not measured impact results from this demo.
+## What the program does
 
-GardenTwin does **not** currently quantify verified carbon sequestration, net greenhouse-gas reductions, local cooling or field-measured water savings.
+1. **Establish a garden location.** Create a browser-local profile and confirm an address or map pin. The coordinates are shared with Garden Setup.
+2. **Configure a crop and season.** Choose a supported crop, planting date and simulation period. Basic setup uses automatic soil selection; Advanced setup exposes manual soil assumptions.
+3. **Build the digital twin.** The backend retrieves historical weather, selects soil properties and models the season one day at a time.
+4. **Explain plant care.** Review recommended irrigation depth, water stress, crop development and estimated nutrient demand. Missing soil-nutrient evidence remains unknown.
+5. **Inspect AI evidence.** Request model status and analysis from Environment. Read each system's source, method, output, relevance and any loading errors.
+6. **Explore alternatives and upcoming weather.** Compare rain-fed conditions with recommended irrigation, and request a current weather forecast. Future soil/crop projections require compatible dates.
 
-## What the demo does
+### Five connected views
 
-| Capability | Current behavior |
+| View | What users can explore |
 | --- | --- |
-| Garden simulation | Runs a date-aligned daily simulation for a location and supported crop. |
-| Soil selection | Tries USDA SSURGO in automatic mode; supports manual inputs and strict SSURGO mode. |
-| Weather | Retrieves historical daily weather and records its source, including applicable fallback/interpolation notes. |
-| Crop development | Estimates growth stage, accumulated growing degree days, height and biomass. |
-| Irrigation | Returns a daily status, recommended depth in mm and explanation. |
-| Nutrients | Estimates daily N/P/K uptake; keeps unavailable soil-nutrient information unknown. |
-| Irrigation comparison | Compares a rain-fed baseline with application of the baseline's daily recommended irrigation. |
-| AI analysis | Reports saved inference outputs, analytical fallbacks, artifact relevance and loading errors separately. |
-| Forecast | Retrieves up to seven usable days of forecast weather; continues soil/crop simulation only when dates align. |
-| Browser frontend | In development; launch instructions and screenshots will be added below. |
+| **Overview** | Garden setup, a visual planting grid, selected-day calendar, watering and fertilizer assessments. |
+| **Plant Growth** | Season playback, growth stages, accumulated warmth, estimated height and biomass. |
+| **Soil & Water** | Root-zone water, soil thresholds, irrigation reasoning and a rain-fed versus irrigated comparison. |
+| **Nutrients** | Estimated N/P/K demand, unavailable nutrient measurements and the need for a soil test. |
+| **Environment** | Historical weather, current forecast, AI status and model-specific evidence. |
 
-The current comparison is a defined backend scenario. It is not an editor for arbitrary irrigation or fertilizer strategies.
+The grid is a planning interface; it is not a spatial multi-plant simulation. Profiles and grid settings are stored in the browser, not in an authenticated account. The Three.js plant specimen is an illustrative photographic plane with motion, not a scanned plant or measured growth reconstruction.
+
+## AI architecture and fallback behavior
+
+AI is the project's environmental intelligence layer. The current code uses previously generated pretrained-model outputs where available, then exposes their meaning and applicability alongside the simulation. Daily watering and crop calculations currently come from the simulation engine; the AI analysis route is separate and does not automatically feed those saved outputs back into each day's equations.
+
+| System | Role | Current implementation |
+| --- | --- | --- |
+| **Microsoft Aurora Small** | Atmospheric/weather evidence | Loads a saved pretrained prediction generated from historical ERA5 input and summarizes regional temperatures. It is not a newly generated garden forecast for each request. |
+| **NASA/IBM Prithvi-EO-2.0 300M** | Satellite-based environmental representation | Loads saved learned features from HLS observations. Features are not a trained crop-health classification or a soil test. |
+| **NVIDIA Earth-2 / FourCastNet1** | Weather-model evidence | Loads a saved forecast produced through Earth2Studio with GFS input. The response identifies freshness and location relevance; total-column water vapor is not rainfall. |
+| **AgriFM-E integration** | Agricultural assessment | Uses an explicitly labeled analytical fallback. A verified pretrained checkpoint/inference path is not implemented. |
+
+`GET /ai/analyze/{run_id}` reports each system separately, including artifact errors and relevance. A saved result may be genuine model inference but still be outdated or unrelated to the selected garden and dates. `GET /ai/status` distinguishes configuration from artifact presence; its current `operational` count is 0, so file presence is not proof of a live running model.
+
+### Why are there fallbacks and example data?
+
+These are different mechanisms with different purposes:
+
+| Mechanism | Reason it exists | What it means for the user |
+| --- | --- | --- |
+| **Analytical AI fallbacks** | Keep analysis available when a saved AI result is missing or cannot be loaded. | Calculations use the actual simulation's available weather, water and crop data, with a fallback method/status. They are not successful pretrained inference. |
+| **Environmental-data fallbacks** | Handle some upstream data gaps or unavailable automatic soil lookup. | Available alternatives or manual assumptions are returned with provenance. Some failures still stop a request; the app cannot guarantee results without required inputs. |
+| **Frontend example fixtures** | Let the interface open and illustrate its views before a successful backend run. | The current UI starts with a labeled example garden and illustrative comparison. These are not evidence about the user's garden and are not automatically substituted for a failed AI request. |
+
+If an AI artifact fails, the simulation and supported analytical methods can still provide useful, explicitly qualified information. A backend error remains an error; an unknown fertilizer dose remains unknown. This preserves useful functionality without inventing a successful AI prediction.
+
+The example UI is still present in the current source. **Analyze garden** replaces it only after a successful backend response; forecast and AI analysis are gated until then. Removing the initial example state and strengthening the AI-led workflow are separate application changes planned for another branch. This README update does not change that behavior.
+
+### Running new model inference
+
+Starting Uvicorn serves the API; it does not regenerate all model outputs. Utilities such as `aurora_real_inference.py`, `ai/run_prithvi.py` and `ai/test_earth2_inference.py` perform separate model workflows with their own dependencies, input data and hardware needs. The saved prediction/feature files are outputs, not the original model weights. Review configured locations and dates before regenerating them.
+
+Installing the base API environment below does not guarantee all saved artifacts will deserialize. Aurora's saved Python objects can require the corresponding Aurora package; model workflows can require additional libraries and compatible versions. Use the model providers' installation instructions and inspect `artifact_errors` rather than treating a successful HTTP response as proof that every model loaded.
 
 ## Run locally
 
-The demo runs through a terminal. Internet access is required for weather retrieval and automatic soil lookup.
+### Requirements
 
-### 1. Clone the repository
+- Python **3.12**, the team's development version.
+- Node.js **20.19+** or **22.12+**; a current compatible Node version is also suitable.
+- **pnpm**, for the frontend's committed lockfile. If unavailable, install it with `npm install --global pnpm@10`.
+- Internet access for dependency installation, weather, automatic soil lookup and address/map services.
+
+The frontend dependency lockfile is included. The Python/model environment is not yet fully pinned, so the installation below is a base API environment rather than an exact reproduction of every inference environment.
+
+### 1. Get the source
 
 ```bash
 git clone https://github.com/Tsunami-The-Coder/GardenTwin.git
 cd GardenTwin
 ```
 
-### 2. Prepare the Python environment
+For an existing checkout, use the current `main` branch containing both `frontend/` and `backend/`, and keep any uncommitted work before updating it.
 
-The team's development environment uses **Python 3.12**. If the tested environment already exists, activate it:
+### 2. Start the backend — terminal 1
 
-```bash
-source .venvs/core/bin/activate
-```
-
-For a new environment on macOS, Linux or WSL:
+From the repository root, create the environment once:
 
 ```bash
 python3.12 -m venv .venvs/core
 source .venvs/core/bin/activate
 python -m pip install --upgrade pip
-python -m pip install "fastapi[standard]" "pydantic>=2,<3" torch pytest
+python -m pip install "fastapi[standard]" "pydantic>=2,<3" torch numpy pytest
 ```
 
-These packages cover the main API imports and core test tooling. The repository does not yet include a pinned dependency file, so this is a starting environment rather than an exact reproduction of the team's model environment. Additional model-specific packages may be needed to deserialize saved artifacts or regenerate inference. Use the tested environment for the same model-loading behavior reported by the team.
+On later visits, activate the existing environment with `source .venvs/core/bin/activate`; you do not need to reinstall packages each time.
 
-See the official [FastAPI installation guidance](https://fastapi.tiangolo.com/tutorial/) and [PyTorch installation selector](https://pytorch.org/get-started/locally/) for platform-specific installation. Running new GPU inference is a separate workflow from serving the API with saved artifacts and analytical fallbacks.
-
-On native Windows PowerShell, create and activate the environment with:
-
-```powershell
-py -3.12 -m venv .venvs/core
-.\.venvs\core\Scripts\Activate.ps1
-```
-
-Then use the same `python -m pip` installation commands. The remaining shell examples use macOS/Linux/WSL syntax; Windows users can also submit requests through Swagger UI.
-
-### 3. Start the backend
-
-From the repository root, with the environment activated:
+Start the API and leave this terminal running:
 
 ```bash
 python -m uvicorn backend.api.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-Keep this terminal open. In another terminal, check the server:
+On native Windows PowerShell, create the environment with `py -3.12 -m venv .venvs/core` and activate it with `.\.venvs\core\Scripts\Activate.ps1`. The `python -m pip` and Uvicorn commands are the same. WSL can use the Bash commands above.
+
+### 3. Start the frontend — terminal 2
+
+Open another terminal in the repository root:
 
 ```bash
-curl http://127.0.0.1:8000/health
+cd frontend
+pnpm install --frozen-lockfile
+pnpm dev
 ```
 
-Expected health response:
+Open **[http://127.0.0.1:5174/](http://127.0.0.1:5174/)**. Keep both terminals running. Use the same browser origin when returning because browser storage is separate for `localhost` and `127.0.0.1`.
 
-```json
-{
-  "status": "running",
-  "application": "GardenTwin"
-}
-```
+Vite forwards `/api/*` to `http://127.0.0.1:8000/*` and strips `/api`. No frontend API URL edit or backend CORS change is needed for this workflow. This proxy belongs to the development server; a static production build needs its own API routing.
 
-Open [interactive API documentation](http://127.0.0.1:8000/docs) to inspect routes and submit simulation requests. The machine-readable API description is at [openapi.json](http://127.0.0.1:8000/openapi.json).
+### 4. Check connectivity
 
-No hosted deployment is required for this local demo. Run IDs are held in memory and are lost when the backend restarts, including a development-server reload.
-
-## Try a simulation
-
-Create `request.json` in the repository root with an example historical garden configuration:
-
-```json
-{
-  "location_name": "Edison pilot garden",
-  "latitude": 40.5187,
-  "longitude": -74.4121,
-  "crop_name": "Tomato",
-  "planting_date": "2026-05-15",
-  "start_date": "2026-05-15",
-  "end_date": "2026-05-31",
-  "crop_coefficient": 1.0,
-  "soil_mode": "auto"
-}
-```
-
-These are example inputs, not an assertion that a measured garden exists at those coordinates. The simulation retrieves weather for the specified location and period.
+From a third terminal:
 
 ```bash
-curl --fail-with-body --silent --show-error \
-  -X POST http://127.0.0.1:8000/simulation/run \
-  -H "Content-Type: application/json" \
-  --data-binary @request.json > run.json
-
-python -m json.tool run.json
+curl --fail http://127.0.0.1:8000/health
+curl --fail http://127.0.0.1:5174/api/health
 ```
 
-The response contains `run_id`, site/crop/date metadata, soil provenance and a `records` array. Each record contains weather, soil water, nutrients, crop development, irrigation, fertilizer assessment and alerts for one simulation date.
+Both should return `{"status":"running","application":"GardenTwin"}`. The second request checks the frontend-to-backend proxy. API documentation is at **[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)**. These checks verify connectivity, not weather access or model inference.
 
-With the same Python environment available in this terminal, retain the run ID:
+## Run in GitHub Codespaces
+
+Codespaces is a remote development machine with VS Code in your browser. Both servers run inside the same Codespace; GitHub forwards the website's port to your browser. This is a development session, not an always-on deployment.
+
+### 1. Open the repository
+
+On GitHub, select **Code → Codespaces → Create codespace on main**. In the terminal, go to the checkout:
 
 ```bash
-GARDENTWIN_RUN_ID=$(python -c 'import json; print(json.load(open("run.json"))["run_id"])')
+cd /workspaces/GardenTwin
 ```
 
-Then inspect the selected day, AI evidence, irrigation comparison and forecast:
+If the checkout has a different folder name, use that path. Check that `frontend/` and `backend/` are both present. Use the Python and Node versions listed in [Requirements](#requirements); if `python3.12` is unavailable, select/install Python 3.12 before creating the environment.
+
+### 2. Start the backend — terminal 1
+
+Create/activate the Python environment and install packages using the local setup above. Then run:
 
 ```bash
-curl --fail-with-body "http://127.0.0.1:8000/simulation/$GARDENTWIN_RUN_ID/overview?selected_date=2026-05-15"
-
-curl --fail-with-body "http://127.0.0.1:8000/ai/status"
-
-curl --fail-with-body "http://127.0.0.1:8000/ai/analyze/$GARDENTWIN_RUN_ID"
-
-curl --fail-with-body "http://127.0.0.1:8000/simulation/$GARDENTWIN_RUN_ID/intervention/irrigation"
-
-curl --fail-with-body "http://127.0.0.1:8000/simulation/$GARDENTWIN_RUN_ID/forecast"
+python -m uvicorn backend.api.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-The comparison route is **GET**, with no request body. The forecast for a historical run can return weather without future crop/soil guidance; check `simulation_continuation_available` and `continuation_note`.
+### 3. Start the frontend — terminal 2
 
-### Input rules
-
-- Latitude: −90 to 90; longitude: −180 to 180.
-- Dates must satisfy `planting_date <= start_date <= end_date`.
-- A run may span at most 366 inclusive calendar days.
-- Crop coefficient must be greater than 0 and no greater than 2; default 1.0.
-- Soil modes: `auto`, `ssurgo` or `manual`.
-- Soil thresholds must satisfy `0 <= wilting_point < field_capacity < saturation`.
-- Initial water content cannot exceed the request's soil saturation.
-
-Optional manual/fallback defaults are `wilting_point=0.12`, `field_capacity=0.30`, `saturation=0.45`, hydraulic conductivity `10 mm/day` and root depth `30 cm`. Initial water content defaults to the selected profile's field capacity.
-
-Automatic mode tries SSURGO and falls back to manual assumptions when necessary, with a provenance note. Strict `ssurgo` mode requires a successful lookup. Manual mode avoids the soil lookup but still requires historical weather access.
-
-## Frontend demo
-
-**In development — replace this section when the frontend is ready.**
-
-<!-- FRONTEND HANDOFF: Add the committed frontend path, Node version, exact install/start/build commands, backend connection setting, screenshots and tested end-to-end flow. Do not claim integration until it has been tested. -->
-
-| Item | To be added |
-| --- | --- |
-| Frontend directory / branch | TODO |
-| Requirements | TODO |
-| Install and start commands | TODO |
-| Backend URL configuration | TODO |
-| Demo screenshots or video | TODO |
-| Tested frontend-to-backend workflow | TODO |
-
-The interface is organized around five modules:
-
-| Module | Purpose |
-| --- | --- |
-| Overview | Garden setup, daily watering and fertilizer assessments, garden summary and care guidance. |
-| Plant Growth | Explore crop development and the selected simulation date. |
-| Soil & Water | Inspect root-zone water, modeled stress and irrigation reasoning. |
-| Nutrients | Explain nutrient demand, available evidence and fertilizer-assessment limitations. |
-| Environment | Inspect weather, data sources and applicable forecast information. |
-
-Until frontend source and startup instructions are committed, a fresh clone provides the backend/API demo rather than the completed browser experience.
-
-## How the simulation works
-
-### Crop development
-
-Seven crop profiles are supported:
-
-| Crop | Example accepted names |
-| --- | --- |
-| Tomato | `Tomato`, `tomatoes` |
-| Pepper | `Pepper`, `Bell pepper` |
-| Cucumber | `Cucumber` |
-| Lettuce | `Lettuce` |
-| Carrot | `Carrot` |
-| Bean | `Bean`, `Green bean` |
-| Strawberry | `Strawberry` |
-
-Each profile defines base/upper temperatures, growing degree-day thresholds and illustrative height/biomass parameters. Accumulated thermal time determines development through planted, emergence, vegetative, flowering, fruit development and maturity stages. Known environmental stress affects modeled growth.
-
-These generalized profiles are not a claim of crop-specific scientific calibration. Estimated yield and health can be unavailable; missing values must not be interpreted as zero.
-
-### Soil water and irrigation
-
-The model tracks water in the crop root zone using weather inputs, evapotranspiration, soil hydraulic properties and any irrigation supplied by a scenario. It returns a modeled water-stress index, recommended irrigation depth and explanation.
-
-Root-zone water is expressed in **mm**, root depth in **cm**, and water stress as a **0–1 modeled index**. These are not readings from a physical moisture sensor or a measured plant-health score.
-
-### Nutrients and fertilization
-
-Daily nitrogen, phosphorus and potassium demand is estimated from modeled biomass gain using illustrative assumptions. This describes estimated crop uptake, **not a fertilizer product dose**.
-
-The current simulation-creation route does not accept nutrient soil-test measurements. Without those data, nutrient availability and stress remain unknown, and the appropriate fertilizer assessment is `unknown`. GardenTwin does not manufacture zero nutrient levels or a validated application rate.
-
-### Irrigation comparison
-
-Both scenarios use the same weather, soil, crop settings and initial conditions:
-
-- **Baseline:** rain-fed simulation.
-- **Intervention:** apply each baseline day's recommended irrigation on that corresponding day.
-
-The response summarizes irrigation totals, average/maximum water stress, stressed-day count and final biomass, with differences and limitations. It currently does not return daily comparison series or accept user-defined strategy parameters. A biomass change is a simulated outcome, not proof of measured productivity gains or water savings.
-
-### Seven-day forecast
-
-The forecast route retrieves Open-Meteo weather. Crop/soil continuation is available only when the first usable forecast day immediately follows the last simulated day. Otherwise, weather is returned with an explanation and no projected crop/soil records.
-
-The Overview endpoint's `next_7_days` are existing historical-simulation records. They are distinct from the upcoming weather forecast. Overview requires the selected day and seven consecutive following records, so dates near the end of a run may not have a complete overview.
-
-## AI architecture
-
-| System | Purpose | Current implementation and boundary |
-| --- | --- | --- |
-| Microsoft Aurora Small | Atmospheric/weather evidence | Saved pretrained inference from historical ERA5 input; regional temperature statistics, not a fresh calibrated garden forecast. |
-| NASA/IBM Prithvi-EO-2.0 300M | Satellite feature extraction | Saved learned features from HLS observations; not a trained crop-health classification or soil test. |
-| AgriFM-E | Agricultural assessment | Analytical fallback over available simulation information; verified pretrained inference is not implemented. |
-| NVIDIA Earth-2 / FourCastNet1 | Atmospheric-model evidence | Saved FourCastNet1 inference through Earth2Studio using GFS input; freshness and spatial relevance must be checked. |
-
-The analysis route attempts to load the available saved artifacts and falls back to analytical methods when loading fails. Its response identifies each system's method, status, input source, outputs, relevance information, artifact errors and limitations. Total-column water vapor from Earth-2 is not rainfall.
-
-`GET /ai/status` distinguishes configuration from artifact presence. Neither proves a model is operational. The current registry reports no verified live operational models; it must not be presented as four continuously running garden models.
-
-### Optional artifact regeneration
-
-Regenerating model artifacts is separate from starting the API. It may require model packages, data access, suitable hardware and the corresponding model licenses.
-
-Repository utilities include `aurora_real_inference.py`, `ai/discover_hls.py`, `ai/download_hls.py`, `ai/run_prithvi.py` and `ai/test_earth2_inference.py`. Review their dependencies and configured data periods before running them.
-
-The HLS discovery/download utilities read coordinates from environment variables:
+The committed Vite configuration permits a local hostname. In Codespaces, start Vite with a temporary runtime override for this Codespace's forwarded hostname. This command loads the existing configuration and API proxy without editing any repository files:
 
 ```bash
-export GARDENTWIN_LATITUDE="40.5187"
-export GARDENTWIN_LONGITUDE="-74.4121"
+cd /workspaces/GardenTwin/frontend
+pnpm install --frozen-lockfile
+pnpm exec node --input-type=module <<'JS'
+import { createServer } from 'vite';
+
+const name = process.env.CODESPACE_NAME;
+const domain = process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN;
+if (!name || !domain) throw new Error('Run this command inside GitHub Codespaces.');
+
+const server = await createServer({
+  server: {
+    host: '0.0.0.0',
+    port: 5174,
+    strictPort: true,
+    allowedHosts: [`${name}-5174.${domain}`],
+  },
+});
+await server.listen();
+server.printUrls();
+JS
 ```
 
-Those variables configure the HLS utilities. Ordinary garden simulations use the coordinates in the API request.
+The hostname comes from [GitHub's Codespaces environment variables](https://docs.github.com/en/codespaces/developing-in-a-codespace/default-environment-variables-for-your-codespace). This invocation uses the project's installed Vite version; the existing `pnpm dev` wrapper does not forward command-line server options.
 
-## Environmental data
+### 4. Open the website
 
-| Source | Role |
-| --- | --- |
-| [NASA POWER](https://power.larc.nasa.gov/) | Historical daily weather inputs. |
-| [Open-Meteo](https://open-meteo.com/) | Applicable weather fallback and upcoming forecast data. |
-| [USDA SSURGO / Soil Data Access](https://sdmdataaccess.sc.egov.usda.gov/) | Mapped soil hydraulic properties for the selected coordinates. |
-| [NASA/USGS Harmonized Landsat Sentinel](https://hls.gsfc.nasa.gov/) | Satellite imagery used for Prithvi features. |
-| [ERA5](https://www.ecmwf.int/en/forecasts/dataset/ecmwf-reanalysis-v5) | Historical atmospheric input for the saved Aurora result. |
-| [GFS](https://www.emc.ncep.noaa.gov/emc/pages/numerical_forecast_systems/gfs.php) | Atmospheric input for the saved FourCastNet1 result. |
+1. Open the **PORTS** tab beside Terminal.
+2. Find port **5174**, or add it with **Forward a Port**.
+3. Keep visibility **Private** and select **Open in Browser**.
+4. Use that forwarded URL, not your computer's `127.0.0.1:5174`.
 
-SSURGO represents mapped soil areas, not a laboratory test of an individual garden. Weather products and satellite features likewise have spatial/temporal resolution limits. Preserve returned provenance and applicability notes instead of presenting every value as a direct garden measurement.
+The backend stays reachable through the frontend proxy inside the Codespace. You only need to forward port 8000 separately if you want to open its `/docs` page directly. The frontend's forwarded URL also supports `/api/health` and `/api/docs`. See [GitHub's port-forwarding guide](https://docs.github.com/en/codespaces/developing-in-a-codespace/forwarding-ports-in-your-codespace).
+
+Keep both server terminals and the Codespace running while using the app. A Codespace does not itself supply a hosted AI endpoint or guarantee GPU acceleration; new model inference remains a separate workload.
+
+## Use the website
+
+1. Create your local profile and confirm the garden's address or map pin.
+2. Select a crop, planting date and historical date range in Garden Setup. Choose a completed period for which the weather provider has data; runs support up to 366 inclusive days.
+3. Select **Analyze garden** and wait for the backend response. The initial example label changes only after a successful run.
+4. Use the calendar or Plant Growth timeline to inspect each simulated day.
+5. Review daily irrigation amount/reason in Soil & Water. Select **Compare irrigation** for the fixed rain-fed versus recommended-irrigation scenario.
+6. Read Nutrients for estimated uptake and evidence gaps. The current API does not accept nutrient soil-test values and therefore cannot supply a validated fertilizer product or dose.
+7. In Environment, select **Check model status** and **Analyze simulation** under AI evidence & insights. Inspect the actual method and relevance for each model. Use **Get forecast** for current weather.
+
+Forecasts only continue the crop/soil model when their first usable day immediately follows the run's last date. Otherwise, the response provides weather and a continuation note. Historical timeline records are not an upcoming forecast.
+
+Backend runs are stored in process memory and disappear after a restart, including a Uvicorn reload. Browser profiles/grid settings can persist, but they do not preserve the backend run. Create a new simulation if a restored run returns 404.
+
+## How the code works
+
+```text
+React interface
+  → /api proxy in Vite
+  → FastAPI validates location, crop, dates and soil settings
+  → NASA POWER weather retrieval and automatic/manual soil selection
+  → Daily soil-water, crop-growth and nutrient-demand simulation
+  → Run records, irrigation reasoning and alerts
+  → Charts, calendar and care guidance
+
+Separate requests for a completed run
+  → AI saved-artifact analysis with identified analytical fallbacks
+  → Rain-fed versus recommended-irrigation comparison
+  → Open-Meteo forecast and date-compatible model continuation
+```
+
+- **Water:** FAO-56 reference evapotranspiration and a root-zone bucket balance estimate water availability, drainage and stress. Advice is expressed as irrigation depth in mm; it is not automatically applied in the base run.
+- **Growth:** crop-specific temperature thresholds accumulate growing degree days. Generalized profiles estimate stage, height and biomass; known water stress reduces new growth. These are modeled quantities, not measured yield or sensor-derived health.
+- **Nutrients:** biomass gain supports illustrative N/P/K uptake estimates. Demand is not a fertilizer application rate. Without nutrient soil-test evidence, availability, nutrient stress and fertilizer dosage remain unknown; null is not zero.
+- **Soil:** automatic mode tries USDA SSURGO and can fall back to manual assumptions with a note. Strict `ssurgo` mode requires a successful lookup. Mapped properties are not a laboratory test of an individual garden.
+- **Forecast:** upcoming Open-Meteo weather is separate from the historical reconstruction and from saved AI artifacts.
+
+Important input rules include `planting_date <= start_date <= end_date`, latitude −90…90, longitude −180…180, and `0 < crop_coefficient <= 2`. Manual volumetric thresholds must satisfy `0 <= wilting_point < field_capacity < saturation`; initial root-zone water must also respect the model's wilting and saturation bounds. See [the request schema](backend/schemas/simulation.py), [daily engine](simulation/engine.py) and [contracts](simulation/contracts.py).
 
 ## API reference
 
-| Method | Endpoint | Purpose |
+Paths below are backend routes. Browser requests through Vite add `/api` in front.
+
+| Method | Route | Purpose |
 | --- | --- | --- |
-| GET | `/health` | Backend status. |
-| POST | `/simulation/run` | Create a simulation. |
+| GET | `/health` | Backend connectivity/status. |
+| POST | `/simulation/run` | Create a garden simulation. |
 | GET | `/simulation/{run_id}` | Retrieve the full run. |
-| GET | `/simulation/{run_id}/overview?selected_date=YYYY-MM-DD` | Selected day plus the following seven simulation records. |
-| GET | `/ai/status` | Model configuration/artifact status. |
-| GET | `/ai/analyze/{run_id}` | Saved-artifact and fallback analysis. |
-| GET | `/simulation/{run_id}/intervention/irrigation` | Rain-fed versus recommended-irrigation comparison. |
-| GET | `/simulation/{run_id}/forecast` | Upcoming weather and eligible simulation continuation. |
-
-Request validation is defined in [backend/schemas/simulation.py](backend/schemas/simulation.py). Daily record contracts are in [simulation/contracts.py](simulation/contracts.py); route behavior is in [backend/api/main.py](backend/api/main.py).
-
-The backend allows local frontend origins on ports 3000 and 5173 for both `localhost` and `127.0.0.1`.
+| GET | `/simulation/{run_id}/overview?selected_date=YYYY-MM-DD` | Selected day plus seven following historical records; requires all eight records. |
+| GET | `/simulation/{run_id}/intervention/irrigation` | Fixed rain-fed versus recommended-irrigation comparison, with no request body. |
+| GET | `/simulation/{run_id}/forecast` | Current weather forecast and eligible model continuation. |
+| GET | `/ai/status` | Configuration and saved-artifact availability. |
+| GET | `/ai/analyze/{run_id}` | Model-specific evidence, relevance, fallbacks and errors. |
 
 ### Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
-| `ModuleNotFoundError` | Activate the intended environment and run from the repository root. Saved artifacts can require additional model-specific packages. |
-| HTTP 422 | Check required fields, ISO dates, crop names and numeric bounds. |
-| HTTP 400 | Read `detail`; possible causes include invalid date/soil relationships, missing weather fields or incomplete Overview dates. |
-| HTTP 404 for a run | The backend may have restarted. Create a new run and use its new ID. |
-| HTTP 502 | An upstream weather/soil/forecast request failed. Check connectivity and returned details; automatic soil mode can fall back to manual assumptions, while strict SSURGO cannot. |
-| AI `artifact_errors` | Inspect the model-specific error and status. The analysis may still return an explicit fallback. |
-| Forecast has no crop projections | Inspect `simulation_continuation_available` and `continuation_note`; a historical run usually cannot be continued directly into today's forecast. |
+| `ModuleNotFoundError` | Activate the correct environment and run Uvicorn from the repository root. Artifact loading may need model-specific packages. |
+| Website opens but analysis cannot connect | Keep both servers running. Check `/health` on 8000 and `/api/health` on 5174. |
+| Codespaces reports a blocked host | Use the Codespaces startup command above, which allows the exact forwarded hostname. |
+| Port already in use | Reuse the existing server or stop it with Ctrl+C in its terminal before restarting. Keep backend on 8000 because the proxy targets it. |
+| HTTP 422 or 400 | Read the returned detail; check dates, input bounds, crop name and soil relationships. |
+| HTTP 502 or upstream timeout | Check connectivity and weather/soil provider availability. Not all missing inputs can be replaced. |
+| Run returns 404 | The backend may have restarted; create a new run. |
+| AI returns a fallback or artifact error | Read the per-model status, dependency error and relevance. This does not mean a fresh pretrained prediction succeeded. |
+| Fertilizer recommendation is unknown | Required nutrient soil-test evidence is unavailable; crop demand alone cannot establish an application dose. |
 
 ## Testing and evaluation
 
-Run the core automated test directory from the repository root:
+Run core backend tests from the repository root with the Python environment active:
 
 ```bash
 python -m pytest tests -q
 ```
 
-Model-generation and inference scripts are separate from this core test command.
+Run frontend checks from `frontend/` after installing its dependencies:
 
-### Team-reported local verification
+```bash
+pnpm test
+pnpm build
+```
 
-The latest results supplied by the team are:
+The frontend build type-checks the app and writes browser assets to `frontend/dist/client`. Optional Sites packaging is retained; `pnpm test:sites` checks that packaging when needed. A static build alone does not start the Python API.
 
-- **150 automated tests passed.**
-- Backend health request succeeded.
-- All seven supported crops completed simulation requests with HTTP 200.
-- AI analysis returned results for all four system integrations.
-- The tested analysis response reported no artifact-loading errors.
+The previous team verification record reported 150 passing backend tests, successful API runs for seven crops, and an AI response containing four system entries without artifact-loading errors in the tested environment. That is a team-reported execution record, not a fresh-install guarantee or evidence of four live models. No new runtime verification is claimed by this documentation-only revision.
 
-These are results from the team's local environment, not a claim that the README's fresh-install instructions were rerun or that a public CI job reproduced them. Add the tested commit, environment versions and logs when publishing a reproducible results record.
+Software tests verify execution and contracts. They do not establish predictive accuracy, agronomic calibration or climate impact. Evaluation still needs held-out reference observations, forecast inputs restricted to information available at prediction time, and consistent comparisons of water use, stress and growth. Generalized crop profiles, missing nutrient evidence, saved-artifact relevance and model-environment reproducibility remain important limitations.
 
-### Scientific validation
+## Development plan
 
-Passing software tests demonstrates execution and contract behavior, not predictive accuracy. The team's November 8–14, 2026 crop runs were functional API checks, not a completed unseen-period predictive evaluation.
+| Step | Scope |
+| --- | --- |
+| **Included now** | React interface, local profiles/grid, FastAPI routes, historical garden simulation, irrigation comparison, nutrient evidence states, forecast and model-specific AI evidence. |
+| **Next application branch** | Remove the initial example UI state, define clear loading/error states, and make verified, garden-relevant inference more directly inform recommendations. These are planned changes, not behavior added by this README. |
+| **Scientific improvement** | Add supported soil-test input and validated fertilizer guidance; calibrate crop profiles; test relevant predictions against held-out observations. |
+| **Longer-term cycle** | Persist run history, support appropriate observations of plant response, and quantify environmental benefits using defensible measurements. |
 
-A formal evaluation still needs:
+The goal is for AI to play a central, verifiable role in the gardening decisions while preserving useful, clearly labeled behavior when an AI component is unavailable. Reliability should come from explicit methods and honest uncertainty, not fabricated model success.
 
-1. A documented development cutoff and untouched later test period.
-2. Forecast inputs restricted to information available at prediction time.
-3. Reference weather, soil-moisture and crop observations where available.
-4. Reported prediction errors and comparisons of resource use/stress/biomass under consistent conditions.
-
-Historical weather reconstruction is not, by itself, a forecast-validation experiment. No held-out predictive-accuracy result or measured climate-impact benefit is claimed here.
-
-## Limitations
-
-- **Illustrative crop parameters:** profiles and generalized growth curves need crop-specific calibration and field validation.
-- **Unknown nutrients:** missing soil-test information is not zero nutrient availability; current nutrient demand is not a validated fertilizer dosage.
-- **Unavailable outputs:** health and yield fields may be null and should be displayed as unavailable.
-- **Mixed AI methods:** saved inference artifacts and analytical fallbacks are not live inference for every run.
-- **Satellite interpretation:** Prithvi features are not a direct plant-health classification or backyard soil measurement.
-- **Forecast applicability:** stale or spatially mismatched artifacts are not upcoming garden forecasts; model continuation is conditional.
-- **Scenario scope:** irrigation comparison uses a specific same-day recommendation schedule and omits equipment, water-availability and cost constraints.
-- **No measured climate impact:** carbon, emissions, cooling and verified resource savings are not quantified.
-- **Temporary storage:** runs are held in memory, with no persistent garden history.
-- **Reproducibility and integration:** dependency pinning, the frontend handoff and documented end-to-end browser verification remain to be completed.
-
-## Project structure
+## Project structure and credits
 
 ```text
 GardenTwin/
+├── frontend/                 # React/TypeScript website, assets and frontend tests
+│   ├── src/                  # Five views, profile, layout, API adapters and fixtures
+│   ├── public/               # Plant images, branding and asset notices
+│   ├── tests/                # Frontend contracts, layout and profile checks
+│   └── vite.config.mjs       # Port 5174 and /api proxy to port 8000
 ├── backend/
 │   ├── api/                  # FastAPI routes
-│   ├── schemas/              # Request validation
-│   └── services/             # Run, overview, soil, intervention and forecast services
-├── simulation/
-│   ├── contracts.py          # Shared run and daily record structures
-│   ├── engine.py             # Daily model step
-│   ├── season.py             # Season execution
-│   ├── crops/                # Crop profiles, thermal time and growth
-│   ├── water/                # Root-zone water and irrigation calculations
-│   ├── nutrients/            # Nutrient balance, demand and losses
-│   └── weather/              # Historical weather retrieval
-├── ai/                       # Model registry, artifact loading and analysis
+│   ├── schemas/              # Input validation
+│   └── services/             # Simulation, soil, overview, comparison and forecast
+├── simulation/               # Daily crop, water and nutrient models
+├── ai/                       # Registry, artifact analysis and model utilities
 ├── data/                     # Saved inference outputs and supporting data
-├── frontend/                 # Frontend handoff placeholder
-├── tests/                    # Automated core tests
-└── docs/                     # Project and submission documentation
+├── tests/                    # Backend/simulation checks
+└── docs/                     # Project and submission documents
 ```
 
-Some original setup documents describe the project's earlier starting state. The implemented API and current source contracts take precedence over those older placeholders.
+### Team
 
-## Future development
-
-- Complete and integrate the browser frontend, with documented local startup and demo media.
-- Commit a tested, pinned dependency environment and repeatable verification record.
-- Improve crop-specific calibration and evaluate against held-out observations.
-- Add supported soil-test input and agronomically validated nutrient guidance.
-- Expand configurable scenario comparison and daily comparison outputs.
-- Add verified, relevant model inference and stronger satellite interpretation.
-- Persist garden configurations and run history.
-- Quantify environmental trade-offs only when defensible methods and reference data are available.
-
-## Team and credits
-
-| Workstream | Responsibility |
+| Workstream | Contribution |
 | --- | --- |
-| UI/UX and frontend | Anuj — product flow, visual design and browser interface. |
-| Backend, simulation and local AI | Ayaan — API, environmental data, simulation and model pipelines. |
-| Integration and evaluation | Shared — contracts, demo verification, limitations and submission. |
+| Anuj | UI/UX, garden workflow and browser frontend. |
+| Ayaan | Backend, environmental data, simulation and model pipelines. |
+| Shared | Integration, testing, limitations and Veritas submission. |
 
-Built with Python, FastAPI, Pydantic and PyTorch. The frontend stack and final run instructions will be recorded with its handoff.
+### Models, data and software
 
-Model and data credits include Microsoft Aurora, NASA/IBM Prithvi-EO-2.0, NASA/USGS HLS, NVIDIA Earth2Studio/FourCastNet1, NASA POWER, Open-Meteo, USDA SSURGO, ECMWF ERA5 and NOAA GFS. AgriFM-E is represented by an explicitly labeled analytical fallback. Model and dataset licenses remain with their respective providers.
+| Resource | Use / source |
+| --- | --- |
+| [Microsoft Aurora](https://github.com/microsoft/aurora) | Pretrained atmospheric model; saved Aurora Small inference. |
+| [NASA/IBM Prithvi-EO-2.0](https://github.com/NASA-IMPACT/Prithvi-EO-2.0) | Pretrained satellite feature extraction. |
+| [NVIDIA Earth2Studio](https://github.com/NVIDIA/earth2studio) | FourCastNet1 weather inference workflow. |
+| [NASA POWER](https://power.larc.nasa.gov/) | Historical weather. |
+| [Open-Meteo](https://open-meteo.com/) | Forecast and applicable weather fallback. |
+| [USDA SSURGO / Soil Data Access](https://sdmdataaccess.sc.egov.usda.gov/) | Mapped soil hydraulic properties. |
+| [NASA/USGS HLS](https://hls.gsfc.nasa.gov/) | Satellite observations for Prithvi. |
+| [ECMWF ERA5](https://www.ecmwf.int/en/forecasts/dataset/ecmwf-reanalysis-v5) | Atmospheric input for saved Aurora inference. |
+| [NOAA GFS](https://www.emc.ncep.noaa.gov/emc/pages/numerical_forecast_systems/gfs.php) | Atmospheric input for FourCastNet1. |
+| [Photon](https://photon.komoot.io/) and [OpenStreetMap](https://www.openstreetmap.org/copyright) | Address search and map context. |
+| [FastAPI](https://fastapi.tiangolo.com/), [Pydantic](https://docs.pydantic.dev/) and [PyTorch](https://pytorch.org/) | Python API, validation and tensor/model tooling. |
+| [React](https://react.dev/), [Vite](https://vite.dev/), [Three.js](https://threejs.org/), [Motion](https://motion.dev/), [Recharts](https://recharts.org/), [Leaflet](https://leafletjs.com/) and [Tabler](https://tabler.io/icons) | Browser interface, visualization, map and icons. |
 
-Development/design assistance includes OpenAI ChatGPT/Codex, OpenAI ImageGen, Google Stitch and Canva. The local UI work uses Tabler icons under its MIT license; preserve the relevant asset notices when the frontend is committed. AI assistance does not establish scientific validation of the resulting model or recommendations.
+AgriFM-E names an intended integration represented by an analytical fallback, not a verified pretrained model used here. Model, dataset and asset licenses remain with their respective providers. Preserve the notices in `frontend/public/garden/`; interface/component sources are recorded in [frontend/COMPONENT_SOURCES.md](frontend/COMPONENT_SOURCES.md), with additional acknowledgments in [credits.txt](credits.txt).
 
-**Repository:** [Tsunami-The-Coder/GardenTwin](https://github.com/Tsunami-The-Coder/GardenTwin)  
-**Challenge:** Veritas AI Hackathon, AI + Climate  
-**Pilot:** Edison, New Jersey
+Development and design assistance includes [OpenAI ChatGPT/Codex](https://openai.com/codex/), OpenAI ImageGen, [Google Stitch](https://stitch.withgoogle.com/) and [Canva](https://www.canva.com/). AI-assisted development is distinct from the environmental-model inference used by GardenTwin and does not establish scientific validation.
 
-*GardenTwin — understand the conditions, compare the choices, and grow with care.*
+**GardenTwin: learn what plants need, care for them thoughtfully, and explore how that care connects to the climate around us.**
