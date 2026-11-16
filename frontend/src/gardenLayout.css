@@ -1,0 +1,62 @@
+.garden-layout .grid-tools {height:40px;gap:2px}
+.garden-layout .grid-tools button {gap:4px;padding:3px;font-size:11px;min-width:0}
+.garden-layout .grid-tools svg {flex-shrink:0;width:16px}
+.garden-layout .grid-tool-help {font-size:11px;line-height:1.45;min-height:32px;margin:10px 0 0;display:flex;gap:5px;align-items:center;flex-wrap:wrap;color:#5b6d63}
+.garden-layout .garden-grid {margin-top:10px}
+.crop-icon {display:inline-flex;align-items:center;justify-content:center;line-height:1;flex-shrink:0;font-family:'Apple Color Emoji','Segoe UI Emoji',sans-serif;font-size:24px}
+.crop-icon img {display:block;width:25px;height:25px;object-fit:contain}
+.garden-cell .crop-icon {font-size:clamp(17px,1.8vw,27px);width:100%;height:100%;pointer-events:none}
+.garden-cell .crop-icon img {width:100%;height:100%;max-width:27px;max-height:27px}
+.tool-select .garden-cell {cursor:pointer}
+.tool-plant .garden-cell.empty {cursor:copy}
+.tool-plant .garden-cell.plant,.tool-plant .garden-cell.exclude {cursor:not-allowed}
+.garden-cell:focus-visible {outline:2px solid var(--forest);outline-offset:-4px;z-index:1}
+.grid-tool-help .crop-icon {font-size:17px}
+.grid-tool-help .crop-icon img {width:17px;height:17px}
+.selected-plant .crop-icon {font-size:23px}
+.selected-plant-details {margin:10px 2px 0;display:grid;gap:5px;font-size:11px;color:#4d6155}
+.selected-plant-details>div {display:flex;justify-content:space-between;gap:10px}
+.selected-plant-details dt {color:#6c7868}
+.selected-plant-details dd {margin:0;text-align:right}
+.garden-layout .grid-feedback {font-size:11px;line-height:1.5;min-height:33px;margin:12px 0 0;color:#335640}
+.plant-editor-context {margin:0 0 11px;padding:8px 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);font-size:10px;line-height:1.45;color:#5b6d63}
+.plant-editor-context strong,.plant-editor-context span {display:block}
+.plant-editor-context strong {font-size:11px;color:var(--forest);margin-bottom:2px}
+.plant-save-actions {display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-top:12px}
+.plant-save-actions .save-plant {width:100%;min-height:34px;font-size:12px;padding:7px 10px}
+.plant-save-actions .plant-revert {font-size:11px;text-decoration:underline;text-underline-offset:3px;padding:3px}
+.plant-save-actions:has(.save-plant:disabled) {opacity:.65}
+.plant-asset-placeholder {position:absolute;left:50%;top:36%;transform:translateX(-50%);width:200px;text-align:center;color:var(--forest);z-index:2;pointer-events:none}
+.plant-asset-placeholder>.crop-icon {font-size:80px;margin-bottom:17px;filter:drop-shadow(0 8px 8px #24492f12)}
+.plant-asset-placeholder h3 {font-family:Georgia,'Times New Roman',serif;font-size:29px;letter-spacing:-.5px}
+.plant-asset-placeholder p {font-size:12px;line-height:1.5;margin-top:7px;color:#62705e}
+.layout-specimen-caption {position:absolute;bottom:12px;left:50%;transform:translateX(-50%);z-index:4;font-size:10px;white-space:nowrap;padding:6px 10px;border-radius:20px;border:1px solid #dde2cf;background:#faf7f0ed;color:#435b43;pointer-events:none}
+@media(min-width:768px) and (max-width:1100px) {
+  .garden-layout {grid-template-columns:220px minmax(230px,330px) minmax(120px,1fr);grid-template-rows:auto auto auto auto auto 1fr;grid-template-areas:'title grid selected' 'subtitle grid details' 'tools grid feedback' 'help grid feedback' 'legend grid note';column-gap:24px;row-gap:8px}
+  .garden-layout h2 {grid-area:title}
+  .garden-layout>p:first-of-type {grid-area:subtitle;margin:0}
+  .garden-layout .grid-tools {grid-area:tools;margin:3px 0 0}
+  .garden-layout .grid-tool-help {grid-area:help;margin:0;min-height:0}
+  .garden-layout .garden-grid {grid-area:grid;margin:0}
+  .garden-layout .grid-legend {grid-area:legend;margin:5px 0 0}
+  .garden-layout .selected-plant {grid-area:selected;margin:0;padding:9px;gap:6px}
+  .garden-layout .selected-plant-details {grid-area:details;margin:0}
+  .garden-layout .grid-feedback {grid-area:feedback;margin:0}
+  .garden-layout .grid-note {grid-area:note;margin:0}
+}
+@media(max-width:767px) {
+  .garden-layout .grid-tools {height:42px;margin-top:18px}
+  .garden-layout .grid-tools button {font-size:12px;gap:5px}
+  .garden-layout .grid-tool-help {min-height:25px;margin:10px 0 0;font-size:12px}
+  .garden-layout .garden-grid {margin-top:10px}
+  .garden-cell .crop-icon {font-size:27px}
+  .selected-plant-details {font-size:12px;margin-top:12px;gap:7px}
+  .garden-layout .grid-feedback {font-size:12px;min-height:0;margin-top:13px}
+  .plant-editor-context {font-size:11px}
+  .plant-editor-context strong {font-size:12px}
+  .plant-save-actions .save-plant {min-height:42px;font-size:13px}
+  .plant-save-actions .plant-revert {min-height:32px;font-size:12px}
+  .layout-specimen-caption {bottom:8px;font-size:9px}
+  .plant-asset-placeholder {width:170px;top:38%}
+  .plant-asset-placeholder>.crop-icon {font-size:65px}
+}
