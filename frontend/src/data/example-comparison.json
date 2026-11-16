@@ -1,0 +1,32 @@
+{
+  "run_id": "example-garden-2026",
+  "intervention": {
+    "days_simulated": 109,
+    "total_irrigation_mm": 1918.98,
+    "mean_water_stress": 0.0,
+    "maximum_water_stress": 0.0,
+    "days_with_water_stress": 0,
+    "final_crop_health_index": null,
+    "final_biomass_kg_ha": 12000.0
+  },
+  "method": "Both scenarios use the same historical weather, soil profile, crop settings, and initial conditions. The intervention applies each baseline irrigation recommendation on its corresponding day.",
+  "baseline": {
+    "days_simulated": 109,
+    "total_irrigation_mm": 0.0,
+    "mean_water_stress": 0.1373,
+    "maximum_water_stress": 0.6586,
+    "days_with_water_stress": 49,
+    "final_crop_health_index": null,
+    "final_biomass_kg_ha": 10394.95
+  },
+  "difference": {
+    "mean_water_stress_reduction": 0.1373,
+    "final_biomass_change_kg_ha": 1605.05
+  },
+  "limitations": [
+    "This is a modeled scenario, not a measured field outcome.",
+    "Daily recommendations are applied on the same day they are calculated.",
+    "The comparison does not model irrigation cost, equipment constraints, or water availability.",
+    "Nutrient availability remains unknown without a soil test."
+  ]
+}
